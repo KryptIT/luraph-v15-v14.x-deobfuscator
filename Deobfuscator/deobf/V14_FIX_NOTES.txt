@@ -1,0 +1,35 @@
+Luraph v14.7 / v14.8 / v14.9 full-engine patch
+
+This build must be installed as a full project replacement, not by copying only
+obfuscators/luraph_v14_*.
+
+Main fixes in this build:
+- v14 runtime root detection no longer assumes bootstrap proto id 1.
+- payload root is inferred from the observed outer->payload proto call chain.
+- trace-assisted recovery selects only statements attributed to that payload root,
+  excluding ordinary environment-probe statements.
+- reverted over-aggressive pf_tid recursion that caused Luraph runtime helpers to
+  be lifted as script closures.
+- native v14 helper ASTs execute with the VM maker's lexical scope, fixing closed
+  initializer locals such as the v14.9 unbound-local failure.
+- native/LPH_NO_VIRTUALIZE function preservation can rebuild captured maker locals.
+- numeric-for handling now reports unknown/non-numeric/zero bounds cleanly instead
+  of throwing Python TypeError on None values.
+- includes previous v14.7/v14.8/v14.9 mapper, repeat-dispatch, loose JSON,
+  symbolic table read/write, FrameArg, table-value and LPH_NO_VIRTUALIZE fixes.
+
+Regression commands:
+  py cli.py v14.7.txt
+  py cli.py v14.8.txt
+  py cli.py v14.9.txt
+
+For the tiny v14.7 fixture whose original source is:
+  print("hello luraph v14.7")
+
+the engine should not accept a multi-thousand-line Luraph bootstrap/runtime dump
+as the deobfuscated result. If the static lift still follows bootstrap scaffolding,
+the payload-attributed runtime reconstruction is used instead.
+
+Note: this package was syntax-checked and its Python-side root/payload extraction
+helpers were smoke-tested. The bundled Luau executables are Windows binaries, so
+an end-to-end harness execution was not possible in the Linux build environment.

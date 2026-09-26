@@ -1,0 +1,9 @@
+v20
+- Rejects Luraph v14.x anti-analysis/fingerprint roots as payload roots.
+- Probe recognizer now supports ChildRemoved as well as DescendantRemoving.
+- Recognizes the combined scheduler + ScreenGui/Frame/Path2D + curve queries + event connections + Folder WaitForChild + HttpService/RunService fingerprint.
+- Probe stripping is gated by a multi-signal score so ordinary user Path2D code is preserved.
+- Root scan treats probe-only candidates as worst-score candidates and scans up to 8 alternate roots.
+- If anti-tamper and payload share one proto, the recognized probe suite is removed and remaining payload code is kept.
+- Final static output is probe-cleaned before acceptance; an empty result is rejected instead of being written as deobfuscated source.
+- Applied consistently to Luraph v14.7, v14.8 and v14.9.

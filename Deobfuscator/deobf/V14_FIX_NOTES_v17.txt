@@ -1,0 +1,12 @@
+Luraph v14.x full fixed v17
+
+v14.7 / v14.8
+- No engine-specific behavior changes from v16.
+
+v14.9
+- Replaces the default invalid-allocation dead end with a targeted fingerprint-helper trap.
+- envlog records the innermost instrumented Luraph proto responsible for an out-of-range table.create/buffer.create.
+- driver reruns with only that proto in skip_protos, preserving decoder/VM state.
+- Does not fabricate {} or buffer.create(0), so it avoids the v15/v16 lenient-allocation infinite-loop regression.
+- DEOB_V14_NO_ALLOC_TRAP=1 disables the new trap for diagnostics.
+- DEOB_V14_LENIENT_ALLOC=1 remains an explicit opt-in legacy fallback.

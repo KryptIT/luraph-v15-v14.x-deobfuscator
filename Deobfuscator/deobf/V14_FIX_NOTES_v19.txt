@@ -1,0 +1,9 @@
+v19 large-script v14 root-selection fixes
+
+- Replaced last-marker root selection with weighted runtime call-chain voting.
+- Runtime trace root hints now override stale root_callee values on v14.x.
+- Captures up to eight ranked root candidates in the proto dump.
+- If a selected root still lifts into Luraph VM/bootstrap scaffolding, tries up to four alternate ranked roots from the same dump without rerunning the script.
+- Rejects final output dominated by caller-register placeholders, unresolved luraph_runtime helpers, handlers tables, flattened bootstrap state machines, or huge serialized numeric proto tables.
+- Removes stale .devirt.luau before each run so rejected prior output cannot be returned.
+- Applies to v14.7, v14.8, and v14.9.

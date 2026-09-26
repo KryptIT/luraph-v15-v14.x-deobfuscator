@@ -1,0 +1,13 @@
+Luraph v14.7/v14.8/v14.9 full build v15
+
+Changes after v14:
+- trace-assisted payload recovery groups statements by proto invocation and prefers the final payload invocation
+- narrowly strips the known v14 Roblox environment probe suite (empty task callbacks, temporary Path2D GUI, immediate DescendantRemoving probes, throwaway folders, dead HttpService/RunService locals)
+- a probe-only trace is no longer accepted as recovered payload source
+- if a v14 run dies specifically on create(size out of range), retry once with recovery-only lenient table.create/buffer.create wrappers; normal allocations still use native Luau behavior
+- missing lexical locals in statically-known v14 runtime/native helpers remain symbolic instead of aborting the whole VM walk
+- retains all prior v14.7/v14.8/v14.9 dispatcher, closure-maker, JSON, symbolic table/frame, and root-attribution fixes
+
+v14.7 regression log supplied by user reaches 16 functions / 0 unlifted blocks in the full lift.
+v14.8 may still hit randomized handlers containing symbolic numeric-for bounds; when the runtime trace reaches the payload, compact payload recovery is preferred over returning probe scaffolding.
+v14.9 now has an additional recovery rerun for the allocation-fingerprint divergence seen in the supplied log.

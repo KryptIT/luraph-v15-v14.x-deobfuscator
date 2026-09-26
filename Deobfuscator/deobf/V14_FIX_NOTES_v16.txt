@@ -1,0 +1,6 @@
+v16
+- v14.8/v14.9 no longer enter expensive backend structuring when the quick VM walk already has unresolved states and no new constant requests
+- v14.9 lenient allocation retry is opt-in via DEOB_V14_LENIENT_ALLOC=1; default keeps first trace to avoid invisible 24s loops
+- direct observed print()/warn() statements are recovered from the full trace when v14 root attribution points at bootstrap/runtime code
+- final v14 lifting is strict by default; set DEVIRT_V14_PARTIAL=1 only for diagnostic partial output
+- nil arithmetic in randomized v14 handler state is kept symbolic instead of immediately aborting the walk

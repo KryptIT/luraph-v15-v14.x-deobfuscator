@@ -1,0 +1,17 @@
+Intense VM Structure:
+Adds extra layers of processing to the VM for extra security. This should make analyzing the functions of the VM more difficult.
+
+Enable Compatibility Mode:
+Do NOT enable this option unless necessary! Enabling option will make your script significantly more vulnerable to dumping. Ensures compatibility with modified Roblox clients that fail to properly implement standard functions.
+
+Hardcode Globals:
+Hardcodes global accesses directly into the outputted result, which provides performance increases and fixes certain limitations with environments. Using this option will expose the names of all globals used in your script! Do not use if any globals accessed in your script are sensitive!
+
+Static Environment:
+Allows extra optimizations if the global environment will never change via getfenv/setfenv or reassignments to _ENV. This also ensures the safe environment status is retained on Luau.
+
+VM Compression:
+Applies strong compression to the obfuscated script to lower resulting file size. Requires loadstring or load to be available in your environment.
+
+Use Debug Library:
+Uses Lua's debug library to add extra security features to the script. Only use this option if you have access to all functions found in Lua's default library.

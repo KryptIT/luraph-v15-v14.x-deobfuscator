@@ -1,0 +1,5 @@
+v18
+- v14.9 driver rebuilt from the working v14.8 flow.
+- v14.9 keeps only allocation-caller attribution as a version-specific runtime hook.
+- allocation helper reruns do not trigger the ordinary shorter-trace rollback heuristic.
+- bot v14.7/v14.8/v14.9 must use cli.py --engine, not deob.py --obfuscator.
