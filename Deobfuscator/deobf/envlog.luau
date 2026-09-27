@@ -32,7 +32,7 @@ local R = {
 	newproxy = newproxy, print = print, clock = os.clock,
 	unpack = table.unpack, insert = table.insert, concat = table.concat,
 	remove = table.remove, fmt = string.format, rep = string.rep,
-	gsub = string.gsub, match = string.match, byte = string.byte,
+	gsub = string.gsub, match = string.match, byte = string.byte, lower = string.lower,
 	sub = string.sub, find = string.find, sort = table.sort,
 	floor = math.floor, huge = math.huge, max = math.max,
 }
@@ -1815,6 +1815,17 @@ local SIGNAL_MEMBERS = {
 	RBXScriptSignal = { Connect = "method", ConnectParallel = "method", Once = "method", Wait = "method" },
 	RBXScriptConnection = { Connected = "prop", Disconnect = "method" },
 }
+
+-- Luraph v14.x fingerprints sometimes derive the spelling of signal methods
+-- dynamically.  In the standalone tracer those decoded names may arrive in
+-- lower-case even though Roblox exposes the canonical capitalized members.
+-- Canonicalize only while collecting devirtualization state: normal tracing
+-- keeps Roblox's case-sensitive member behavior.
+local DEVT_SIGNAL_ALIAS = {
+	wait = "Wait", connect = "Connect", once = "Once", connectparallel = "ConnectParallel",
+	disconnect = "Disconnect",
+}
+
 PMT.__index = function(p, k)
 	local info = INFO[p]
 	if CFG.trace or CFG.ptrace then R.print("[index]", info.name or info.hint, k) end
@@ -1830,8 +1841,15 @@ PMT.__index = function(p, k)
 		if depth >= 3 then return WORKSPACEP end
 	end
 	if SIGNAL_MEMBERS[info.tname] then
-		local m = SIGNAL_MEMBERS[info.tname][k]
-		if m == "method" then return methodFn(p, k) end
+		local memberKey = k
+		if CFG.devirt and R.type(k) == "string" then
+			local alias = DEVT_SIGNAL_ALIAS[R.lower(k)]
+			if alias and SIGNAL_MEMBERS[info.tname][alias] then
+				memberKey = alias
+			end
+		end
+		local m = SIGNAL_MEMBERS[info.tname][memberKey]
+		if m == "method" then return methodFn(p, memberKey) end
 		if m == nil then
 			R.error(R.fmt("%s is not a valid member of %s", R.tostring(k), info.tname), 0)
 		end

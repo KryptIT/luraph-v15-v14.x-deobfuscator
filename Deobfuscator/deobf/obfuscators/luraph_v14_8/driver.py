@@ -231,7 +231,7 @@ def _v14_probe_signature_score(code):
     """Score the narrow Roblox anti-analysis fingerprint used by Luraph v14.x.
 
     This intentionally requires several independent markers so ordinary user
-    code that happens to use Path2D or ChildRemoved is not stripped.
+    code that happens to use Path2D or one Roblox signal is not stripped.
     """
     if not code:
         return 0
@@ -247,9 +247,15 @@ def _v14_probe_signature_score(code):
         score += 3
     if len(re.findall(r'^\s*task\.(?:spawn|delay)\(', code, re.M)) >= 2:
         score += 2
-    event_calls = len(re.findall(r'\.(?:DescendantRemoving|ChildRemoved):Connect\(function', code))
+    event_calls = len(re.findall(r'\.(?:DescendantRemoving|ChildRemoved|AncestryChanged):Connect\(function', code))
     if event_calls >= 2:
         score += 3
+    # v14.8 in particular also ships an event-only ancestry fingerprint.
+    # Requiring several empty-looking AncestryChanged probes keeps this narrow
+    # enough not to classify an ordinary user signal connection as scaffolding.
+    ancestry_calls = len(re.findall(r'\.AncestryChanged:Connect\(function', code))
+    if ancestry_calls >= 4:
+        score += 4
     if 'Instance.new("Folder")' in code and re.search(r':WaitForChild\("\d+"\)', code):
         score += 2
     if 'game:GetService("HttpService")' in code and 'game:GetService("RunService")' in code:
@@ -263,7 +269,7 @@ def _strip_v14_probe_suite(code):
     This is intentionally narrow and is only used after the static lifter has
     failed.  v14.8/v14.9 run a recognizable temporary Roblox fingerprint:
     empty task callbacks, a throwaway ScreenGui/Path2D tree, immediate
-    DescendantRemoving/ChildRemoved connect/disconnect pairs and throwaway Folders.  Those
+    DescendantRemoving/ChildRemoved/AncestryChanged connect/disconnect pairs and throwaway Folders.  Those
     statements are Luraph runtime scaffolding, not payload source.
     """
     if _v14_probe_signature_score(code) < 8:
@@ -295,8 +301,21 @@ def _strip_v14_probe_suite(code):
             i += 1
             continue
 
-        # Immediate empty DescendantRemoving connection + disconnect.
-        m = re.match(r'^local\s+(\w+)\s*=\s*(.+)\.(?:DescendantRemoving|ChildRemoved):Connect\(function\([^)]*\)\s*$', stripped)
+        # Some code generators/minifiers collapse the whole empty callback and
+        # disconnect onto one line.  Remove that form too, but only after the
+        # suite-level signature gate above has fired.
+        m = re.match(
+            r'^local\s+(\w+)\s*=\s*(.+?)\.(?:DescendantRemoving|ChildRemoved|AncestryChanged):Connect\(function\([^)]*\)\s*end\)\s*;?\s*\1:Disconnect\(\)\s*$',
+            stripped)
+        if m:
+            connection_vars.add(m.group(1))
+            i += 1
+            continue
+
+        # Immediate empty Roblox-signal connection + disconnect.
+        # AncestryChanged is used by the v14.8 fingerprint on game/workspace,
+        # throwaway folders and a couple of services.
+        m = re.match(r'^local\s+(\w+)\s*=\s*(.+)\.(?:DescendantRemoving|ChildRemoved|AncestryChanged):Connect\(function\([^)]*\)\s*$', stripped)
         if m and i + 2 < len(lines) and lines[i + 1].strip() == "end)"                 and lines[i + 2].strip() == m.group(1) + ":Disconnect()":
             connection_vars.add(m.group(1))
             i += 3

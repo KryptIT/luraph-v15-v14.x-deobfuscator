@@ -1,0 +1,10 @@
+Luraph v14.x deobfuscator v22
+
+- Recognizes AncestryChanged as another v14.x environment-probe signal.
+- Strips the repeated empty Connect(function(...) end) + Disconnect() fingerprint
+  when it appears as a suite across game/workspace/throwaway folders/services.
+- Handles both multiline and compact one-line connection forms.
+- Adds an AncestryChanged suite score for root rejection so event-only probe roots
+  are not accepted as payload.
+- Keeps isolated legitimate AncestryChanged user code untouched.
+- Applied to v14.7, v14.8 and v14.9 drivers.
