@@ -1,3 +1,5 @@
+DSC.GG/oxyenv
+MY CONTACT ON DISCORD: larpcorrupt USER ID: 1481960463289028649
 # Luraph v14.x / v15 Deobfuscator
 
 A research-oriented **Lua/Luau deobfuscation and devirtualization framework** focused on recovering readable code from Luraph-protected scripts.
